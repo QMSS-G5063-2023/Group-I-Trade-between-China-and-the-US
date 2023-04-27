@@ -1,5 +1,5 @@
 # Group-I-Trade-between-China-and-the-US
-## Title: Solar Photovoltaic Trade Between China and the US
+### Solar Photovoltaic Trade Between China and the US
 ## Abstract: 
 We are interested in understanding the trade trend between China and the US, specifically after Covid-19 took place in 2020. We will focus only on solar panel trade, as it has been a crucial business between these two superpowers. We will make use of the dataset from department of energy, solar energy research database and LexisNexis text data from Columbia library to explore this question from import-export perspective, solar-factory perspective, and activeness of solar power labs:
 
