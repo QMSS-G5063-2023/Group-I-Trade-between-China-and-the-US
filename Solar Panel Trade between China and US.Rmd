@@ -1,0 +1,100 @@
+---
+title: "US CHINA TRADE"
+author: "PEIZHI ZHANG"
+date: "2023-04-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
+
+library(readr)
+
+library(dplyr)
+
+library(tidyverse)
+
+library(data.table)
+
+library(ggplot2)
+
+
+```
+
+## Import Solar Panel Trade Text
+
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
+
+setwd("/Users/peizhi/Documents/Data Visualization/")
+
+file_paths <- list.files("tradetext", pattern = ".txt", full.names = TRUE)
+
+tradedata <- lapply(file_paths, readLines) %>% unlist() %>% data.frame(text = .)
+
+
+```
+
+## Clean text data
+
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
+
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(tidytext)
+library(tidyverse)
+
+new_stops <- c("room","one","stop","minutes","nearby","listing","br","equipped","building","just","can","size","prior","welcome","ave","away","will","aside","except","month","home","bedroom","bathroom","two","three","apartment","unit","area","'ll","place","located","blocks","couple","plus","restaurants","shops","must","like","surrounded","daily","will","provide","without","within","spacebbr","bthe","nycbr","nyc","years","looking","information","give","makes","street","ny","city","quite","come","also","likebr","people","giving","five","behind","need","allow","space","next","world","stay","single","kitchen","guest","ride","min","citi","cit", "cinemat", "cinco", "chunk","circl","access","accessbbr","accomodation","accomod","air","amaz","footnote","citation","moreover",
+               "beside","on","also","including","if","article","then","likely","such","as","requires",
+               "Chinese", "youre", "present", "past", "Chinas", "China's", "India", "number", "Maria", "Although", 
+               "studies","solar","energy","hence","third","section","study",
+               "yesterday","comes","thank","earlier","came","doc","talk","tell","found","part","way",
+               "thats","therefore","energies","yet","morning","done","theyre","bri","suggests","lets",
+               "taking","believe","job","Chinese","China","trade", "think","know","much",
+               "said","however","second","thus","country", "china", "market","industry","United","States","chinese","countries",
+               stopwords("en"))
+
+data_corpus <- VCorpus(VectorSource(tradedata$text))
+data_corpus <- tm_map(data_corpus, removePunctuation)
+data_corpus <- tm_map(data_corpus, content_transformer(tolower))
+data_corpus <- tm_map(data_corpus, stripWhitespace)
+data_corpus <- tm_map(data_corpus, removeWords, stopwords("english"))
+data_corpus <- tm_map(data_corpus, removeWords, c(new_stops))
+data_corpus <- tm_map(data_corpus, removeNumbers)
+
+```
+
+## Word Cloud 
+
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
+
+dtm <- DocumentTermMatrix(data_corpus)
+
+word_freq <- colSums(as.matrix(dtm))
+
+word_freq_df <- data.frame(word = names(word_freq), freq = word_freq)
+
+wordcloud(words = word_freq_df$word, freq = word_freq_df$freq, min.freq = 5, max.words = 200,
+          colors=c("red","blue"))
+
+```
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
+
+ggsave("wordcloud_trade.png")
+
+
+
+```
+
+
+```{r, message = FALSE, warning = FALSE, echo=FALSE}
+
+knitr::include_graphics("/Users/peizhi/Documents/GitHub/Group-I-Trade-between-China-and-the-US/wordcloud_trade.png")
+
+```
+
