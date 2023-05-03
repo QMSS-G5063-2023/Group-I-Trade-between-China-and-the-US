@@ -359,4 +359,166 @@ wordcloud(words = word_freq_df$word, freq = word_freq_df$freq, min.freq = 5, max
 
 
 
+As more countries invest in solar infrastructure, they are competing to gain an advantage in the market. However, this competition has caused trade disputes between countries, particularly China and the United States. One major issue is the accusation that Chinese manufacturers are selling their solar products at unfairly low prices, which has led to the US imposing tariffs. As a result, Chinese manufacturers have moved their operations to Southeast Asia and continue to export to the US. These factories often rely on raw materials from China, like polysilicon.
+
+There is an interactive bar chart that shows China's exports of silicon and photovoltaic cells to three Southeast Asian countries identified by the US, as well as to the US itself. By selecting "Photovoltaic cells (Downstream)", we can see that China had a high trade surplus with the US, but this changed drastically in 2018, potentially due to the US-China Trade War launched in 2017. The surplus increased steadily from 2019-2021 as the US still relied heavily on China's exports. However, in 2022, another investigation was launched on China's solar manufacturing, which caused a contraction in China's direct exports to the US. Along with this contraction, China's exports to Malaysia, Cambodia, and Thailand increased, reflecting the idea that China is transferring its solar exports to third-party countries before sending them to the US.
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(shiny)
+library(ggplot2)
+library(tidyr)
+library(readr)
+library(cowplot)
+
+Partner_codes <- read.csv("/Users/sybilchoo/Downloads/SIPA 2023 Spring/Data Visualization/Final project/partnerAreas.csv") %>% 
+  rename(partnerCode = id, partnerCountry = text) %>% 
+  mutate(partnerCode = as.factor(partnerCode),
+         partnerCountry = as.factor(partnerCountry))
+
+filtered_data_CN_solar <-read.csv("/Users/sybilchoo/Downloads/SIPA 2023 Spring/Data Visualization/Final project/filtered_data_CN_solar.csv")
+
+merged_data <- merge(filtered_data_CN_solar, Partner_codes, by = "partnerCode", all.x = TRUE)
+
+merged_data <- merged_data %>% 
+  mutate(category = case_when(
+    HS6code %in% c("854150", "854140") ~ "Photovoltaic cells (Downstream)",
+    HS6code %in% c("391000", "280461", "280469") ~ "Silicon (Upstream)",
+    TRUE ~ ""
+  ))
+merged_data$balance_primaryValue <- merged_data$balance_primaryValue / 1000000
+
+
+# UI
+ui <- fluidPage(
+  titlePanel("China's Solar Panels Trade Balance"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("year", "Year:",
+                  choices = c("2017", "2018", "2019", "2020", "2021")),
+      selectInput("category", "Solar panel value chain:",
+                  choices = c("Silicon (Upstream)", "Photovoltaic cells (Downstream)"))
+    ),
+    mainPanel(
+      plotOutput("plot", height = "500px")
+    )
+  )
+)
+
+# Server
+server <- function(input, output) {
+  
+  # Filter the data based on the selected year and category
+  filtered_data <- reactive({
+    subset_data <- subset(merged_data, partnerCountry %in% c("Cambodia", "Malaysia", "Thailand", "Vietnam", "USA"))
+    filtered_data <- subset_data %>% 
+      filter(period == input$year) %>% 
+      filter(category == input$category) %>% 
+      group_by(period, partnerCountry) %>% 
+      summarize(balance_primaryValue = sum(balance_primaryValue))
+    return(filtered_data)
+  })
+  
+  # Create a bar chart
+  output$plot <- renderPlot({
+    ggplot(filtered_data(), aes(x = partnerCountry, y = balance_primaryValue, fill = partnerCountry)) +
+      geom_col(position = "stack") +
+      labs(title = "Solar panel value chain trade Balance with China",
+           x = "Partner Country",
+           y = "Trade Balance with China (million USD)")+
+      scale_fill_brewer(palette = "Blues")
+  })
+}
+
+# Run the app
+shinyApp(ui, server)
+```
+
+
+To further strengthen our previous assumption we have tentatively concluded, we 
+
+
+```{R}
+##Graphic two##
+##Cleaning U.S. solar data
+US_solar <-read_delim("/Users/sybilchoo/Downloads/SIPA 2023 Spring/Data Visualization/Final project/US_Solar_imports.csv")
+US_solar_cleaned <- US_solar %>%
+  rename(HS6code = CmdCode) %>% 
+  mutate(HS6code = as.factor(HS6code),
+         FlowCode = as.factor(FlowCode),
+         PartnerCode = as.factor(PartnerCode),
+         ReporterCode = as.factor(ReporterCode)) %>%
+  # Select data columns to keep
+  select(Period, ReporterCode, # Year and reporting country
+         PartnerCode, Partner2Code, # Trading partner(s)
+         FlowCode, # Import / Export
+         HS6code, # Commodity HS code
+         Qty, QtyUnitCode, NetWgt, # Quantity traded and units of commodity, net weight
+         PrimaryValue) %>% # Combination between FOB and CIF values 
+  # Group all export/import observations for each partner country in the same rows
+  group_by(Period, ReporterCode, PartnerCode, HS6code, QtyUnitCode, FlowCode) %>%
+  summarise(Qty=sum(Qty), NetWgt=sum(NetWgt), PrimaryValue=sum(PrimaryValue)) %>%
+  ungroup() %>%
+  pivot_wider(id_cols = c("Period","ReporterCode","PartnerCode","HS6code","QtyUnitCode"), 
+              names_from = c("FlowCode"),
+              values_from = c("Qty","PrimaryValue","NetWgt")) %>% 
+  replace(is.na(.), 0) %>% 
+  mutate(balance_primaryValue = PrimaryValue_X - PrimaryValue_M,
+         balance_qty = Qty_X - Qty_M,
+         balance_netWgt = NetWgt_X - NetWgt_M) %>% 
+  arrange(HS6code, desc(balance_primaryValue))
+
+Partner_codes_P <- read.csv("/Users/sybilchoo/Downloads/SIPA 2023 Spring/Data Visualization/Final project/partnerAreas.csv") %>% 
+  rename(PartnerCode = id, PartnerCountry = text) %>% 
+  mutate(PartnerCode = as.factor(PartnerCode),
+         PartnerCountry = as.factor(PartnerCountry))
+merged_data_US <- merge(US_solar_cleaned, Partner_codes_P, by = "PartnerCode", all.x = TRUE)
+
+merged_data_US_grouped <- merged_data_US %>%
+  group_by(PartnerCountry, Period) %>%
+  summarize(total_balance_primaryValue = sum(balance_primaryValue)) %>%
+  ungroup()
+  
+top_countries <- merged_data_US_grouped[order(-merged_data_US_grouped$total_balance_primaryValue),]
+
+top_countries_list <- lapply(sort(unique(top_countries$Period), decreasing = FALSE), function(x) {
+  top_5 <- head(subset(top_countries, Period == x), 5)
+  top_5$PartnerCountry[top_5$PartnerCountry == "China, Hong Kong SAR"] <- "China"
+  top_5$PartnerCountry <- factor(top_5$PartnerCountry, levels = unique(top_5$PartnerCountry))
+  top_5$total_balance_primaryValue <- top_5$total_balance_primaryValue / 1000000 # Divide by 1 million to display in millions
+  return(top_5)
+})
+
+
+##
+plot_list <- lapply(top_countries_list, function(df) {
+  # Set the color based on whether the country is China or not
+  df$color <- ifelse(df$PartnerCountry == "China", "#1F4788", "#80ADD7")
+  
+  # Create the bar chart
+  ggplot(df, aes(x = total_balance_primaryValue, y = PartnerCountry, fill = color)) +
+    geom_bar(stat = "identity", width = 0.4) +
+    scale_fill_identity() +
+    labs(x = NULL, y = NULL, title = paste(unique(df$Period))) +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.1, size = 8, face = "bold"),
+          legend.position = "none",
+          panel.grid.major.y = element_blank(),
+          panel.grid.major.x = element_blank())+
+    scale_x_continuous(limits = c(0, 450), breaks = seq(0, 400, by = 200))+
+    scale_y_discrete(limits = rev(levels(df$PartnerCountry)))+
+    coord_fixed(ratio = 100)
+})
+
+plot_grid(plotlist = plot_list, ncol = 4, align = "h") %>%
+  ggdraw() +
+  draw_label("The United States Top 5 Solar Panel Import Countries", fontface = "bold", x = 0.5, y = 0.7)
+
+
+```
+
+
+
+
 
