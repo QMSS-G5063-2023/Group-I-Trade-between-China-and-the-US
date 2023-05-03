@@ -9,11 +9,21 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r setup}
-library(ggplot2)
+```{r echo=TRUE}
+library(shiny)
+library(leaflet)
+library(readr)
 library(dplyr)
-library(scales)
+library(tidyr)
+library(stringr)
+library(RCurl)
+library(sqldf)
 library(plotly)
+library(leaflet)
+library(leaflet.extras)
+library(ggplot2)
+library(tm)
+library(scales)
 library(DT)
 library(tidyverse)
 library(ggrepel)
@@ -23,6 +33,218 @@ library(data.table)
 
 
 ```
+```
+
+```{r echo=TRUE}
+df <- read.csv('SETO.csv')
+```
+
+```{r echo=TRUE}
+# Define UI for application that draws a histogram
+ui <- fluidPage(
+  
+  # Application title
+  titlePanel("Solar Energy Research Database"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      checkboxGroupInput(
+        inputId = "SUBPROGRAM",
+        label = "PROGRAM AREA",
+        choices = c("Concentrating Solar Power" = "Concentrating Solar Power",
+                    "Manufacturing and Competitiveness" = "Manufacturing and Competitiveness",
+                    "Photovoltaics" = "Photovoltaics", 
+                    "Soft Costs" = "Soft Costs",
+                    "Systems Integration" = "Systems Integration"
+					),
+        selected = c("Concentrating Solar Power",
+                     "Manufacturing and Competitiveness",
+                     "Photovoltaics", 
+                     "Soft Costs",
+                     "Systems Integration"
+        ),
+		),
+	
+      selectInput(
+        inputId = "Status",
+        label = "STATUS",
+    		choices = c("Any" = "Any",
+    		            "Active" = "Active",
+                    "Inactive" = "Inactive"
+					),
+        selected = "Any"
+      ),
+	  
+      selectInput(
+        inputId = "FOA_Acronym",
+        label = "FUNDING OPPORTUNITY",
+        choices = c("All" = "All",
+                    "AOP" = "AOP",
+                    "AOP 13-15" = "AOP 13-15",
+                    "AOP 2015" = "AOP 2015",
+                    "AOP 2016" = "AOP 2016",
+                    "ASSIST" = "ASSIST",
+                    "Bos-X" = "Bos-X",
+                    "BRIDGE" = "BRIDGE",
+                    "BTMS" = "BTMS",
+                    "CSP 2012 Lab Call" = "CSP 2012 Lab Call",
+                    "CSP APOLLO" = "CSP APOLLO",
+                    "CSP ARRA" = "CSP ARRA",
+                    "CSP Baseload" = "CSP Baseload",
+                    "CSP COLLECTS" = "CSP COLLECTS",
+                    "CSP HIBRED" = "CSP HIBRED",
+                    "CSP Lab Call" = "CSP Lab Call",
+                    "CSP R&D" = "CSP R&D",
+                    "CSP SunShot R&D" = "CSP SunShot R&D",
+                    "Desal" = "Desal",
+                    "DISTANCE" = "DISTANCE",
+                    "DuraMat" = "DuraMat",
+                    "ELEMENTS" = "ELEMENTS",
+                    "EMPOWERED" = "EMPOWERED",
+                    "ENERGISE" = "ENERGISE",
+                    "Engineering Research Centers" = "Engineering Research Centers",
+                    "Forecasting 2" = "Forecasting 2",
+                    "F-PACE" = "F-PACE",
+                    "F-PACE 2" = "F-PACE 2",
+                    "FY20 PVSK" = "FY20 PVSK",
+                    "FY21 PV & CSP" = "FY21 PV & CSP",
+                    "FY21 SI & Incubator" = "FY21 SI & Incubator",
+                    "FY22 CSP" = "FY22 CSP",
+                    "FY22 SIPS - CSP & PV" = "FY22 SIPS - CSP & PV",
+                    "GEARED" = "GEARED",
+                    "Gen3 CSP" = "Gen3 CSP",
+                    "Gen3 CSP Lab Call" = "Gen3 CSP Lab Call",
+                    "General AOP" = "General AOP",
+                    "GMLC-GM" = "GMLC-GM",
+                    "GMLC-RDS" = "GMLC-RDS",
+                    "High Pen" = "High Pen",
+                    "Incubator 1" = "Incubator 1",
+                    "Incubator 2" = "Incubator 2",
+                    "Incubator 3" = "Incubator 3",
+                    "Incubator 4" = "Incubator 4",
+                    "Incubator 5" = "Incubator 5",
+                    "Incubator 6" = "Incubator 6",
+                    "Incubator 7" = "Incubator 7",
+                    "Incubator 8" = "Incubator 8",
+                    "Incubator 9" = "Incubator 9",
+                    "Innovative Pathways" = "Innovative Pathways",
+                    "JIT" = "JIT",
+                    "Lab Call 19-21" = "Lab Call 19-21",
+                    "Lab Call FY20" = "Lab Call FY20",
+                    "Lab Call FY21" = "Lab Call FY21",
+                    "Lab Call FY22-24" = "Lab Call FY22-24",
+                    "Lab Core FY21" = "Lab Core FY21",
+                    "Mini-SuNLaMP" = "Mini-SuNLaMP",
+                    "MURA" = "MURA",
+                    "MURI" = "MURI",
+                    "NextGen 2" = "NextGen 2",
+                    "NextGen 3" = "NextGen 4",
+                    "Orange Button" = "Orange Button",
+                    "Plug and Play" = "Plug and Play", 
+                    "Power Electronics" = "Power Electronics",
+                    "PREDICTS" = "PREDICTS",
+                    "PREDICTS 2" = "PREDICTS 2",
+                    "Pre-Incubator" = "Pre-Incubator",
+                    "PUC" = "PUC",
+                    "PV Lifetime" = "PV Lifetime",
+                    "PVMI" = "PVMI",
+                    "PVRD SIPS" = "PVRD SIPS",
+                    "PVRD" = "PVRD",
+                    "PVRD2" = "PVRD2",
+                    "Rooftop Solar Challenge" = "Rooftop Solar Challenge",
+                    "Rooftop Solar Challenge 2" = "Rooftop Solar Challenge 2",
+                    "RTC" = "RTC",
+                    "RACER" = "RACER",
+                    "SBIR/STTR FY11" = "SBIR/STTR FY11",
+                    "SBIR/STTR FY12" = "SBIR/STTR FY12",
+                    "SBIR/STTR FY13" = "SBIR/STTR FY13",
+                    "SBIR/STTR FY14" = "SBIR/STTR FY14",
+                    "SBIR/STTR FY15" = "SBIR/STTR FY15",
+                    "SBIR/STTR FY16" = "SBIR/STTR FY16",
+                    "SBIR/STTR FY17" = "SBIR/STTR FY17",
+                    "SBIR/STTR FY18" = "SBIR/STTR FY18",
+                    "SBIR/STTR FY19" = "SBIR/STTR FY19",
+                    "SBIR/STTR FY20" = "SBIR/STTR FY20",
+                    "SBIR/STTR FY21 PI R2" = "SBIR/STTR FY21 PI R2",
+                    "SBV-1" = "SBV-1",
+                    "SBV-2" = "SBV-2",
+                    "SBV-3" = "SBV-3",
+                    "SEEDS" = "SEEDS",
+                    "SEEDS2-SES" = "SEEDS2-SES",
+                    "SEGIS-AC" = "SEGIS-AC",
+                    "SEIN" = "SEIN",
+                    "SETO FY2018" = "SETO FY2018",
+                    "SETO FY2019" = "SETO FY2019",
+                    "SETO FY2020" = "SETO FY2020",
+                    "SHINES" = "SHINES",
+                    "Soft BOS" = "Soft BOS",
+                    "Solar America Cities" = "Solar America Cities",
+                    "Solar Forecasting" = "Solar Forecasting",
+                    "SolarOps" = "SolarOps",
+                    "SolarMat" = "SolarMat",
+                    "SolarMat 2" = "SolarMat 2",
+                    "Solar Market Pathways" = "Solar Market Pathways",
+                    "SPARC" = "SPARC",
+                    "STEP" = "STEP",
+                    "SolWEB" = "SolWEB",
+                    "SunPath" = "SunPath",
+                    "SunShot Prize" = "SunShot Prize",
+                    "SuNLaMP" = "SuNLaMP",
+                    "SUNRISE" = "SUNRISE",
+                    "T2M 1" = "T2M 1",
+                    "T2M 2" = "T2M 2",
+                    "T2M 3" = "T2M 3",
+                    "TCF FY16" = "TCF FY16",
+                    "TCF FY17" = "TCF FY17",
+                    "TCF FY18" = "TCF FY18",
+                    "TCF FY19" = "TCF FY19",
+                    "TCF FY20" = "TCF FY20",
+                    "TCF FY21" = "TCF FY21",	
+                    "Thermal Storage" = "Thermal Storage",
+                    "VELOCITI" = "VELOCITI"
+					),
+        selected = "All")
+		
+      ),
+    
+    mainPanel(
+      leafletOutput("USA")
+    )
+  )
+  
+  
+  
+)
+```
+
+```{r echo=TRUE}
+# DEFINE SERVER LOGIC ---------------------------------------------------------------
+server <- function(input, output) {
+  
+  output$USA <- renderLeaflet({
+    df_leaf <-
+      df %>%
+      filter(Status == input$Status,
+             FOA_Acronym == input$FOA_Acronym,
+			       SUBPROGRAM == input$SUBPROGRAM)
+    #write.csv(df_leaf, file="df_leaf.csv", row.names = FALSE)
+    leaflet(df_leaf) %>%
+      addProviderTiles(providers$CartoDB.Positron) %>%
+      addMarkers(~Longitude,~Latitude,popup = ~Status,clusterOptions = markerClusterOptions())%>%
+	    addMarkers(~Longitude,~Latitude,popup = ~FOA_Acronym,clusterOptions = markerClusterOptions())%>%
+      addMarkers(~Longitude,~Latitude,popup = ~SUBPROGRAM,clusterOptions = markerClusterOptions())%>%
+      addSearchOSM() %>%
+      addMiniMap()     
+    
+  })
+  
+}
+```
+
+```{r echo=TRUE}
+shinyApp(ui = ui, server = server)
+```
+
 
 ## R Markdown
 
