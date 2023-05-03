@@ -288,6 +288,8 @@ plotly_fig <- ggplotly(plot1, tooltip = c("text"), colors = c("Total Balance Pri
 
 plotly_fig <- plotly_fig %>% layout(legend = list(x = 0.2, y = -0.4))
 
+plotly_fig <- plotly_fig %>% layout(title = list(text = "China vs. US: Balance Primary Value and Quantity per Year(2017-21)", font = list(size = 20)))
+
 plotly_fig
 
 
