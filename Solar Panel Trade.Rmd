@@ -29,6 +29,12 @@ library(tidyverse)
 library(ggrepel)
 library(readr)
 library(data.table)
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(tidytext)
+library(tidyverse)
+
 
 
 
@@ -317,11 +323,6 @@ tradedata <- lapply(file_paths, readLines) %>% unlist() %>% data.frame(text = .)
 
 ```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
 
-library(tm)
-library(SnowballC)
-library(wordcloud)
-library(tidytext)
-library(tidyverse)
 
 new_stops <- c("room","one","stop","minutes","nearby","listing","br","equipped","building","just","can","size","prior","welcome","ave","away","will","aside","except","month","home","bedroom","bathroom","two","three","apartment","unit","area","'ll","place","located","blocks","couple","plus","restaurants","shops","must","like","surrounded","daily","will","provide","without","within","spacebbr","bthe","nycbr","nyc","years","looking","information","give","makes","street","ny","city","quite","come","also","likebr","people","giving","five","behind","need","allow","space","next","world","stay","single","kitchen","guest","ride","min","citi","cit", "cinemat", "cinco", "chunk","circl","access","accessbbr","accomodation","accomod","air","amaz","footnote","citation","moreover",
                "beside","on","also","including","if","article","then","likely","such","as","requires",
