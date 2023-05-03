@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r echo=TRUE}
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
 library(shiny)
 library(leaflet)
 library(readr)
@@ -34,12 +34,13 @@ library(data.table)
 
 ```
 
-```{r echo=TRUE}
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
 
 df <- read.csv('SETO.csv')
 ```
 
-```{r echo=TRUE}
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
+
 # Define UI for application that draws a histogram
 ui <- fluidPage(
   
@@ -217,7 +218,8 @@ ui <- fluidPage(
 )
 ```
 
-```{r echo=TRUE}
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
+
 # DEFINE SERVER LOGIC ---------------------------------------------------------------
 server <- function(input, output) {
   
@@ -241,7 +243,7 @@ server <- function(input, output) {
 }
 ```
 
-```{r echo=TRUE}
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
 
 shinyApp(ui = ui, server = server)
 
@@ -252,7 +254,8 @@ shinyApp(ui = ui, server = server)
 
 
 
-```{r}
+```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
+
 CN_US_cleaned_all <- read.csv("CN_US_cleaned_all.csv")
 subset <- CN_US_cleaned_all[grep("^8541", CN_US_cleaned_all$HS6code),]
 
@@ -341,6 +344,7 @@ data_corpus <- tm_map(data_corpus, removeNumbers)
 
 
 ## Word Cloud 
+
 
 ```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
 
