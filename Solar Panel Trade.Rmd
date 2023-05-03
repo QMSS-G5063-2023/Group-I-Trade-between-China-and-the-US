@@ -33,9 +33,9 @@ library(data.table)
 
 
 ```
-```
 
 ```{r echo=TRUE}
+
 df <- read.csv('SETO.csv')
 ```
 
@@ -242,16 +242,18 @@ server <- function(input, output) {
 ```
 
 ```{r echo=TRUE}
+
 shinyApp(ui = ui, server = server)
+
+
 ```
 
 
-## R Markdown
 
 
 
 ```{r}
-CN_US_cleaned_all <- read.csv("C:/Users/shixy/OneDrive/桌面/QMSS/4 Data Visualization/CN_US_cleaned_all.csv")
+CN_US_cleaned_all <- read.csv("CN_US_cleaned_all.csv")
 subset <- CN_US_cleaned_all[grep("^8541", CN_US_cleaned_all$HS6code),]
 
 
@@ -281,7 +283,6 @@ plot1 <- ggplot(plot_data, aes(x = period)) +
         legend.direction = "vertical") +
   labs(caption = "Source: CN_US_cleaned_all dataset")
   
-ggplotly(plot1, tooltip = c("text"), colors = c("Total Balance Primary Value (thousands USD)" = "green", "Total Balance Quantity (ten thousands unit)" = "blue"))
 
 plotly_fig <- ggplotly(plot1, tooltip = c("text"), colors = c("Total Balance Primary Value (thousands USD)" = "green", "Total Balance Quantity (ten thousands units)" = "blue"))
 
@@ -295,7 +296,6 @@ plotly_fig
 
 
 
-## Import Solar Panel Trade Text
 
 ```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
 
@@ -308,7 +308,7 @@ tradedata <- lapply(file_paths, readLines) %>% unlist() %>% data.frame(text = .)
 
 ```
 
-## Clean text data
+
 
 ```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
 
@@ -338,6 +338,8 @@ data_corpus <- tm_map(data_corpus, removeNumbers)
 
 ```
 
+
+
 ## Word Cloud 
 
 ```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
@@ -349,21 +351,10 @@ word_freq <- colSums(as.matrix(dtm))
 word_freq_df <- data.frame(word = names(word_freq), freq = word_freq)
 
 wordcloud(words = word_freq_df$word, freq = word_freq_df$freq, min.freq = 5, max.words = 200,
-          colors=c("red","blue"))
-
-```
-```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
-
-ggsave("wordcloud_trade.png")
-
-
+          colors=c("green","blue"))
 
 ```
 
 
-```{r, message = FALSE, warning = FALSE, echo=FALSE}
 
-knitr::include_graphics("/Users/peizhi/Documents/GitHub/Group-I-Trade-between-China-and-the-US/wordcloud_trade.png")
-
-```
 
