@@ -9,22 +9,78 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-
-```{r, message = FALSE, warning = FALSE, error=FALSE, echo=FALSE}
-
-library(readr)
-
+```{r setup}
+library(ggplot2)
 library(dplyr)
-
+library(scales)
+library(plotly)
+library(DT)
 library(tidyverse)
-
+library(ggrepel)
+library(readr)
 library(data.table)
 
-library(ggplot2)
 
 
 ```
+
+## R Markdown
+
+
+
+```{r}
+CN_US_cleaned_all <- read.csv("C:/Users/shixy/OneDrive/桌面/QMSS/4 Data Visualization/CN_US_cleaned_all.csv")
+subset <- CN_US_cleaned_all[grep("^8541", CN_US_cleaned_all$HS6code),]
+
+
+plot_data <- subset %>%
+  group_by(period) %>%
+  summarise(total_balance_primaryvalue = sum(balance_primaryValue),
+            total_balance_qty = sum(balance_qty)) %>%
+  mutate(primary_value_label = paste("Period: ", period, "<br> Balance Primary Value: ",
+                                     round(total_balance_primaryvalue*10^(-3),2), " (thousands USD)"),
+         qty_label = paste("Period: ", period, "<br> Balance Quantity: ",
+                            round(total_balance_qty*10^(-4), 2), " (ten thousands units)"))
+
+plot1 <- ggplot(plot_data, aes(x = period)) +
+  geom_line(aes(y = total_balance_primaryvalue*10^(-3), color = "Total Balance Primary Value (thousands USD)"), size = 1.5) +
+  geom_point(aes(y = total_balance_primaryvalue*10^(-3), color = "Total Balance Primary Value (thousands USD)", text = primary_value_label), size = 3) +
+  geom_line(aes(y = total_balance_qty*10^(-4), color = "Total Balance Quantity (ten thousands units)"), size = 1.5) +
+  geom_point(aes(y = total_balance_qty*10^(-4), color = "Total Balance Quantity (ten thousands units)", text = qty_label), size = 3) +
+  scale_color_manual(values = c("green", "blue")) +
+  scale_y_continuous(name = "Total Balance", labels = scales::comma) +
+  labs(x = "Year", y = "Total balance primary value (thousands USD)") +
+  ggtitle("China vs. US: Balance Primary Value and Quantity per Year(2017-21)") +
+  theme_minimal() +
+  theme(axis.title = element_text(size = 16),
+        plot.title = element_text(size = 18),
+        panel.grid.major = element_line(color = "gray", linetype = "dashed"),
+        legend.position = "bottom",
+        legend.direction = "vertical") +
+  labs(caption = "Source: CN_US_cleaned_all dataset")
+  
+ggplotly(plot1, tooltip = c("text"), colors = c("Total Balance Primary Value (thousands USD)" = "green", "Total Balance Quantity (ten thousands unit)" = "blue"))
+
+plotly_fig <- ggplotly(plot1, tooltip = c("text"), colors = c("Total Balance Primary Value (thousands USD)" = "green", "Total Balance Quantity (ten thousands units)" = "blue"))
+
+plotly_fig <- plotly_fig %>% layout(legend = list(x = 0.2, y = -0.4))
+
+plotly_fig
+
+
+```
+
+
+```{r}
+table1<-datatable(subset[, c("period", "reporterCode", "partnerCode", "HS6code", "balance_primaryValue", "balance_qty", "balance_netWgt")], 
+          options = list(pageLength = 10, lengthMenu = c(5, 10, 20, 50)), 
+          rownames = FALSE, 
+          class = "display")
+
+table1
+```
+
+
 
 ## Import Solar Panel Trade Text
 
