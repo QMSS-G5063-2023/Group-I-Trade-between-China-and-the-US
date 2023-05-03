@@ -71,15 +71,6 @@ plotly_fig
 ```
 
 
-```{r}
-table1<-datatable(subset[, c("period", "reporterCode", "partnerCode", "HS6code", "balance_primaryValue", "balance_qty", "balance_netWgt")], 
-          options = list(pageLength = 10, lengthMenu = c(5, 10, 20, 50)), 
-          rownames = FALSE, 
-          class = "display")
-
-table1
-```
-
 
 
 ## Import Solar Panel Trade Text
