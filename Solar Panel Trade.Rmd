@@ -286,7 +286,7 @@ plot1 <- ggplot(plot_data, aes(x = period)) +
 
 plotly_fig <- ggplotly(plot1, tooltip = c("text"), colors = c("Total Balance Primary Value (thousands USD)" = "green", "Total Balance Quantity (ten thousands units)" = "blue"))
 
-plotly_fig <- plotly_fig %>% layout(legend = list(x = 0.2, y = -0.4))
+plotly_fig <- plotly_fig %>% layout(legend = list(x = 0.2, y = -0.5))
 
 plotly_fig <- plotly_fig %>% layout(title = list(text = "China vs. US: Balance Primary Value and Quantity per Year(2017-21)", font = list(size = 20)))
 
