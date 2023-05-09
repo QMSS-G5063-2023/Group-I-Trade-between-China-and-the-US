@@ -37,6 +37,5 @@ o This dataset includes solar photovoltaic R&D labs. It is a large-scale time-se
 
 • Bar Chart: We could use bar chart to visualize the trend of import and export amount for solar panels throughout 2020, 2021 and 2022.
 
-• Point Chart: We could use point chart to illustrate the activeness of solar projects in the US.
+• Line Chart: We could use line chart to illustrate the change of trade balance between China nd the US over 2017-2021.
 
-• Pyramid Plot: We will use pyramid plot to compare the active solar factories and inactive solar panels with the key words’ frequencies.
